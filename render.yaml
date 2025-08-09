@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: billcreator-qb-oauth
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: CLIENT_ID
+        sync: false
+      - key: CLIENT_SECRET
+        sync: false
+      - key: REDIRECT_URI
+        sync: false
+      - key: QBO_ENV
+        value: sandbox
+      - key: STATE_SECRET
+        sync: false
+      - key: MINOR_VERSION
+        value: "70"
+      - key: PORT
+        value: "10000"

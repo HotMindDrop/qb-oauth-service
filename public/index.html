@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload Service</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .category-selector {
+            margin-bottom: 30px;
+        }
+
+        .category-selector label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .category-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .category-btn {
+            padding: 12px 24px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .category-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .category-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .file-input-container {
+            border: 2px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9ff;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .file-input-container:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .file-input-container.dragover {
+            border-color: #764ba2;
+            background: #e8ecff;
+            transform: scale(1.02);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        .file-preview {
+            margin-top: 30px;
+        }
+
+        .file-list {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .file-item {
+            background: #f8f9ff;
+            border: 1px solid #e0e6ff;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .file-item:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .file-icon {
+            font-size: 2rem;
+            color: #667eea;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .file-size {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .file-category {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: white;
+            font-size: 0.9rem;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .upload-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e6ff;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .results {
+            margin-top: 30px;
+        }
+
+        .result-item {
+            background: #f0f8ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .result-success {
+            background: #f0fff0;
+            border-color: #90ee90;
+        }
+
+        .result-error {
+            background: #fff0f0;
+            border-color: #ffb3b3;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fff0f0;
+            border: 1px solid #ffb3b3;
+            color: #d63031;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            background: #f0fff0;
+            border: 1px solid #90ee90;
+            color: #00b894;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .category-buttons {
+                flex-direction: column;
+            }
+
+            .file-item {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📁 File Upload Service</h1>
+            <p>Upload files to Cloudflare with category management</p>
+        </div>
+
+        <div class="content">
+            <div class="upload-section">
+                <h2 class="section-title">1. Select Default Category</h2>
+                <div class="category-selector">
+                    <label>Choose a default category for your files:</label>
+                    <div class="category-buttons">
+                        <button class="category-btn active" data-category="A">Category A</button>
+                        <button class="category-btn" data-category="B">Category B</button>
+                        <button class="category-btn" data-category="C">Category C</button>
+                    </div>
+                </div>
+
+                <h2 class="section-title">2. Select Files</h2>
+                <div class="file-input-container" id="fileInputContainer">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">Click to select files or drag and drop</div>
+                    <div class="upload-hint">Supports images, documents, videos, and more</div>
+                    <input type="file" id="fileInput" class="file-input" multiple accept="*/*">
+                </div>
+
+                <div class="file-preview" id="filePreview" style="display: none;">
+                    <h3 class="section-title">3. Preview & Adjust Categories</h3>
+                    <div class="file-list" id="fileList"></div>
+                    <button class="upload-btn" id="uploadBtn">🚀 Upload Files</button>
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <div>Uploading files to Cloudflare...</div>
+            </div>
+
+            <div class="results" id="results" style="display: none;">
+                <h3 class="section-title">Upload Results</h3>
+                <div id="resultsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+        let defaultCategory = 'A';
+        let fileCategories = {};
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEventListeners();
+        });
+
+        function initializeEventListeners() {
+            // Category buttons
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    defaultCategory = this.dataset.category;
+                    updateFileCategories();
+                });
+            });
+
+            // File input
+            const fileInput = document.getElementById('fileInput');
+            const fileInputContainer = document.getElementById('fileInputContainer');
+
+            fileInputContainer.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', handleFileSelect);
+
+            // Drag and drop
+            fileInputContainer.addEventListener('dragover', handleDragOver);
+            fileInputContainer.addEventListener('dragleave', handleDragLeave);
+            fileInputContainer.addEventListener('drop', handleDrop);
+
+            // Upload button
+            document.getElementById('uploadBtn').addEventListener('click', uploadFiles);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files);
+            processFiles(files);
+        }
+
+        function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+            processFiles(files);
+        }
+
+        function processFiles(files) {
+            selectedFiles = files;
+            fileCategories = {};
+            
+            // Set default category for all files
+            files.forEach(file => {
+                fileCategories[file.name] = defaultCategory;
+            });
+
+            displayFilePreview();
+        }
+
+        function displayFilePreview() {
+            const filePreview = document.getElementById('filePreview');
+            const fileList = document.getElementById('fileList');
+
+            if (selectedFiles.length === 0) {
+                filePreview.style.display = 'none';
+                return;
+            }
+
+            fileList.innerHTML = '';
+            selectedFiles.forEach(file => {
+                const fileItem = createFileItem(file);
+                fileList.appendChild(fileItem);
+            });
+
+            filePreview.style.display = 'block';
+        }
+
+        function createFileItem(file) {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+
+            const fileIcon = document.createElement('div');
+            fileIcon.className = 'file-icon';
+            fileIcon.textContent = getFileIcon(file.type);
+
+            const fileInfo = document.createElement('div');
+            fileInfo.className = 'file-info';
+            fileInfo.innerHTML = `
+                <div class="file-name">${file.name}</div>
+                <div class="file-size">${formatFileSize(file.size)}</div>
+            `;
+
+            const fileCategory = document.createElement('div');
+            fileCategory.className = 'file-category';
+            fileCategory.innerHTML = `
+                <label>Category:</label>
+                <select class="category-select" data-filename="${file.name}">
+                    <option value="A" ${fileCategories[file.name] === 'A' ? 'selected' : ''}>A</option>
+                    <option value="B" ${fileCategories[file.name] === 'B' ? 'selected' : ''}>B</option>
+                    <option value="C" ${fileCategories[file.name] === 'C' ? 'selected' : ''}>C</option>
+                </select>
+            `;
+
+            // Add event listener for category change
+            const categorySelect = fileCategory.querySelector('.category-select');
+            categorySelect.addEventListener('change', function() {
+                fileCategories[file.name] = this.value;
+            });
+
+            fileItem.appendChild(fileIcon);
+            fileItem.appendChild(fileInfo);
+            fileItem.appendChild(fileCategory);
+
+            return fileItem;
+        }
+
+        function getFileIcon(mimeType) {
+            if (mimeType.startsWith('image/')) return '🖼️';
+            if (mimeType.startsWith('video/')) return '🎥';
+            if (mimeType.startsWith('audio/')) return '🎵';
+            if (mimeType.includes('pdf')) return '📄';
+            if (mimeType.includes('word') || mimeType.includes('document')) return '📝';
+            if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return '📊';
+            return '📁';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function updateFileCategories() {
+            selectedFiles.forEach(file => {
+                if (!fileCategories[file.name]) {
+                    fileCategories[file.name] = defaultCategory;
+                }
+            });
+            displayFilePreview();
+        }
+
+        async function uploadFiles() {
+            const uploadBtn = document.getElementById('uploadBtn');
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+
+            uploadBtn.disabled = true;
+            loading.style.display = 'block';
+            results.style.display = 'none';
+
+            const formData = new FormData();
+            selectedFiles.forEach(file => {
+                formData.append('files', file);
+            });
+            formData.append('defaultCategory', defaultCategory);
+            formData.append('fileCategories', JSON.stringify(fileCategories));
+
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                displayResults(result);
+            } catch (error) {
+                console.error('Upload error:', error);
+                displayError('Upload failed: ' + error.message);
+            } finally {
+                uploadBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        function displayResults(result) {
+            const resultsDiv = document.getElementById('results');
+            const resultsList = document.getElementById('resultsList');
+
+            resultsList.innerHTML = '';
+
+            if (result.success) {
+                result.results.forEach(fileResult => {
+                    const resultItem = document.createElement('div');
+                    resultItem.className = `result-item ${fileResult.success ? 'result-success' : 'result-error'}`;
+
+                    if (fileResult.success) {
+                        resultItem.innerHTML = `
+                            <strong>✅ ${fileResult.filename}</strong><br>
+                            Category: ${fileResult.category}<br>
+                            URL: <a href="${fileResult.cloudflareUrl}" target="_blank">${fileResult.cloudflareUrl}</a>
+                        `;
+                    } else {
+                        resultItem.innerHTML = `
+                            <strong>❌ ${fileResult.filename}</strong><br>
+                            Error: ${fileResult.error}
+                        `;
+                    }
+
+                    resultsList.appendChild(resultItem);
+                });
+            } else {
+                displayError(result.error || 'Upload failed');
+            }
+
+            results.style.display = 'block';
+        }
+
+        function displayError(message) {
+            const resultsDiv = document.getElementById('results');
+            const resultsList = document.getElementById('resultsList');
+
+            resultsList.innerHTML = `<div class="error">❌ ${message}</div>`;
+            resultsDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html> 
