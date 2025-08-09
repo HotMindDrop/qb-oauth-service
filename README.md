@@ -2,6 +2,14 @@
 
 A minimal Node.js/Express service that handles QuickBooks Online OAuth authentication for the BillCreator application. This service is designed to be deployed on Render and provides the required endpoints for Intuit's OAuth flow.
 
+## 🚨 **PRODUCTION CONFIGURATION**
+
+⚠️ **This service is configured for PRODUCTION QuickBooks Online**, which means:
+- ✅ **Real Data**: Connects to live QuickBooks companies
+- ✅ **Live Transactions**: Works with actual financial records
+- ⚠️ **App Review Required**: Must pass Intuit's production app review
+- ⚠️ **Legal Requirements**: Need privacy policy & terms of service
+
 ## 🚀 Features
 
 - **Health Check**: `/healthz` endpoint for Render monitoring
@@ -57,7 +65,7 @@ Add these environment variables in Render:
 | `CLIENT_ID` | `your_intuit_client_id` | From Intuit Developer Dashboard |
 | `CLIENT_SECRET` | `your_intuit_client_secret` | From Intuit Developer Dashboard |
 | `REDIRECT_URI` | `https://YOUR-RENDER-URL.onrender.com/oauth/callback` | Your Render app URL |
-| `QBO_ENV` | `sandbox` | Environment (sandbox/production) |
+| `QBO_ENV` | `production` | Environment (sandbox/production) |
 | `STATE_SECRET` | `random-long-string` | Security token |
 | `MINOR_VERSION` | `70` | QuickBooks API version |
 

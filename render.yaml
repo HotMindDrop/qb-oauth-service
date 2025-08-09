@@ -14,7 +14,7 @@ services:
       - key: REDIRECT_URI
         sync: false
       - key: QBO_ENV
-        value: sandbox
+        value: production
       - key: STATE_SECRET
         sync: false
       - key: MINOR_VERSION
